@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Check AQI - AQI App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #81d4fa, #4db6ac);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #004d40;
+    }
+    .container {
+      background: #ffffffee;
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 40px 35px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      box-sizing: border-box;
+      position: relative;
+    }
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 600;
+      font-size: 1.8rem;
+      color: #00796b;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 14px 18px;
+      border-radius: 8px;
+      border: 2px solid #b2dfdb;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 20px;
+      background: #f0fdfa;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    input[type="text"]:focus {
+      border-color: #00796b;
+      box-shadow: 0 0 6px #26a69a;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(90deg, #00796b, #004d40);
+      border: none;
+      border-radius: 10px;
+      color: #e0f2f1;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 121, 107, 0.6);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #004d40, #00796b);
+      box-shadow: 0 8px 25px rgba(0, 121, 107, 0.8);
+    }
+    #notification {
+      display: none;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: #004d40;
+      background-color: #a5d6a7;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    #aqi-result {
+      margin-top: 30px;
+      padding: 25px 20px;
+      border-radius: 15px;
+      color: white;
+      display: none;
+      text-align: left;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      animation: fadeInScale 0.6s ease forwards;
+      position: relative;
+      overflow: hidden;
+    }
+    #aqi-result h4 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+    #aqi-result p {
+      margin: 6px 0;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    a.logout-link {
+      display: block;
+      margin-top: 30px;
+      text-align: center;
+      color: #00796b;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a.logout-link:hover {
+      color: #004d40;
+    }
+
+    /* Animation for AQI result */
+    @keyframes fadeInScale {
+      0% {
+        opacity: 0;
+        transform: scale(0.9);
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      }
+    }
+
+    /* Animated background gradient inside AQI result */
+    #aqi-result::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(270deg, #00796b, #004d40, #26a69a, #00796b);
+      background-size: 600% 600%;
+      animation: bgGradient 10s ease infinite;
+      opacity: 0.3;
+      border-radius: 15px;
+      z-index: 0;
+    }
+    #aqi-result > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes bgGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>AQI Predictor</h2>
+
+    <div id="notification"></div>
+
+    <input type="text" id="destination" placeholder="Enter city or place name" />
+    <button onclick="getAQI()">Get AQI</button>
+
+    <div id="aqi-result"></div>
+    <a class="logout-link" href="/login_page">Logout</a>
+  </div>
+
+  <script>
+    function showNotification(message) {
+      const notification = document.getElementById("notification");
+      notification.textContent = message;
+      notification.style.display = "block";
+
+      // Hide after 4 seconds
+      setTimeout(() => {
+        notification.style.display = "none";
+      }, 4000);
+    }
+
+    async function getAQI() {
+      const destination = document.getElementById("destination").value.trim();
+      const resultDiv = document.getElementById("aqi-result");
+      resultDiv.style.display = 'none';
+      resultDiv.innerHTML = '';
+
+      if (!destination) {
+        showNotification("Please enter a destination");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/get_aqi?destination=${encodeURIComponent(destination)}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.style.backgroundColor = data.color || '#00796b';
+          resultDiv.style.display = 'block';
+          resultDiv.innerHTML = `
+            <h4>AQI for ${data.location.destination}</h4>
+            <p><strong>Index:</strong> ${data.aqi_index}</p>
+            <p><strong>Category:</strong> ${data.aqi_category}</p>
+            <p><strong>Latitude:</strong> ${data.location.latitude}</p>
+            <p><strong>Longitude:</strong> ${data.location.longitude}</p>
+            <p><strong>Detected Condition:</strong> ${data.condition || "Not available. Upload report first."}</p>
+            <p><strong>Health Advice:</strong> ${data.advice || "No advice available."}</p>
+          `;
+        } else {
+          resultDiv.style.backgroundColor = '#444';
+          resultDiv.style.display = 'block';
+          resultDiv.innerHTML = `<p>${data.message}</p>`;
+          showNotification(data.message);
+        }
+      } catch (error) {
+        resultDiv.style.backgroundColor = '#d32f2f';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `<p>Error fetching AQI: ${error.message}</p>`;
+        showNotification(`Error fetching AQI: ${error.message}`);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Medical Report - AQI App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #81d4fa, #4db6ac);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      color: #004d40;
+    }
+
+    .header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      background-color: #004d40;
+      padding: 15px 25px;
+      border-radius: 10px;
+      margin-top: -14px;
+      box-shadow: 0 4px 15px rgba(0, 77, 64, 0.4);
+      color: #e0f2f1;
+      user-select: none;
+    }
+
+    .header img {
+      height: 45px;
+      margin-right: 15px;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.3));
+    }
+
+    .header h1 {
+      font-weight: 600;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      margin-top: 60px;
+      background: #ffffffee;
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 40px 35px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+      text-align: center;
+    }
+
+    .container:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 600;
+      font-size: 1.8rem;
+      color: #00796b;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 14px 18px;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      border: 2px solid #b2dfdb;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      outline: none;
+      cursor: pointer;
+      background: #f0fdfa;
+    }
+
+    input[type="file"]:focus {
+      border-color: #00796b;
+      box-shadow: 0 0 6px #26a69a;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(90deg, #00796b, #004d40);
+      border: none;
+      border-radius: 10px;
+      color: #e0f2f1;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 121, 107, 0.6);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #004d40, #00796b);
+      box-shadow: 0 8px 25px rgba(0, 121, 107, 0.8);
+    }
+
+    #responseMessage {
+      margin-top: 20px;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .header, .container {
+        max-width: 90vw;
+        padding: 25px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <img src="https://cdn-icons-png.flaticon.com/512/727/727606.png" alt="AQI Logo" />
+    <h1>AQI Health Assistant</h1>
+  </div>
+
+  <div class="container">
+    <h2>Upload Medical Report</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="report" accept=".pdf, .jpg, .jpeg, .png" required />
+      <button type="submit">Upload Report</button>
+    </form>
+    <div id="responseMessage"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const responseMessage = document.getElementById("responseMessage");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch("/upload_report", {
+          method: "POST",
+          body: formData,
+        });
+
+        const contentType = response.headers.get("content-type");
+
+        if (response.ok && contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          responseMessage.style.color = "green";
+          responseMessage.textContent = data.message || "Report uploaded successfully!";
+          form.reset();
+          setTimeout(() => {
+            window.location.href = "/aqi_page";
+          }, 1500);
+        } else if (contentType && contentType.includes("text/html")) {
+          responseMessage.style.color = "red";
+          responseMessage.textContent = "Session expired. Please log in again.";
+          setTimeout(() => {
+            window.location.href = "/login_page";
+          }, 1500);
+        } else {
+          responseMessage.style.color = "red";
+          responseMessage.textContent = "Unexpected error occurred.";
+        }
+      } catch (error) {
+        responseMessage.style.color = "red";
+        responseMessage.textContent = "Error uploading report: " + error.message;
+      }
+    });
+  </script>
+
+</body>
+</html>

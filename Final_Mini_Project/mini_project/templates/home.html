@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Air Quality App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    nav {
+      margin-top: 20px;
+    }
+    nav a {
+      text-decoration: none;
+      color: #ffffffcc;
+      font-weight: bold;
+      margin: 0 15px;
+      padding: 8px 12px;
+      border: 1px solid transparent;
+      border-radius: 5px;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    nav a:hover {
+      background-color: #ffffffaa;
+      color: #000;
+      border-color: #ddd;
+    }
+    h1 {
+      font-size: 3em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to the AQI App</h1>
+  <nav>
+    <a href="/register_page">Register</a>
+    <a href="/login_page">Login</a>
+    <a href="/upload_page">Upload Report</a>
+    <a href="/aqi_page">Check AQI</a>
+  </nav>
+</body>
+</html>
